@@ -1,0 +1,126 @@
+/* Milestone 1 — geography controls. Reuses the existing palette. */
+
+.interface-overlay { --accent: #65d7ff; }
+
+/* The overlay ignores the mouse so the globe stays draggable; opt controls in. */
+.geo-column {
+  pointer-events: auto;
+  top: 110px;
+  bottom: 300px;
+  width: 340px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+.geo-column .location-panel { margin-top: 0; }
+
+.region-search { position: relative; }
+.region-search input {
+  width: 100%;
+  padding: 11px 12px 11px 36px;
+  color: #fff;
+  font-size: 13px;
+  background: rgba(10, 22, 35, 0.8);
+  border: 1px solid rgba(120, 190, 220, 0.25);
+  border-radius: 10px;
+  outline: none;
+  backdrop-filter: blur(18px);
+}
+.region-search input:focus { border-color: var(--accent); }
+.region-search-icon { position: absolute; left: 12px; top: 13px; color: #7f95a8; }
+
+.region-search-list {
+  position: absolute;
+  z-index: 20;
+  left: 0; right: 0; top: calc(100% + 6px);
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(8, 18, 30, 0.97);
+  border: 1px solid rgba(120, 190, 220, 0.25);
+  border-radius: 10px;
+}
+.region-search-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.region-search-list li small { color: #7f95a8; font-size: 10px; white-space: nowrap; }
+.region-search-list li.active { background: rgba(101, 215, 255, 0.12); }
+.region-search-list .region-search-note { color: #9ba9b7; cursor: default; }
+
+.geo-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.geo-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.geo-field span { color: #7f95a8; font-size: 8px; letter-spacing: 2px; }
+.geo-field select {
+  width: 100%;
+  padding: 9px 8px;
+  color: #fff;
+  font-size: 12px;
+  background: rgba(10, 22, 35, 0.8);
+  border: 1px solid rgba(120, 190, 220, 0.25);
+  border-radius: 8px;
+}
+.geo-field select option { background: #0a1623; }
+
+.region-status {
+  display: flex; align-items: center; gap: 7px;
+  margin-top: 14px;
+  color: #9ba9b7; font-size: 11px; line-height: 1.6;
+}
+.region-error { color: #ff8f8f; }
+.region-hint { margin-top: 16px; color: #9ba9b7; font-size: 11px; line-height: 1.8; }
+
+.region-facts {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.region-facts .wide { grid-column: 1 / -1; }
+.region-facts dt { color: #7f95a8; font-size: 8px; letter-spacing: 1.5px; margin-bottom: 4px; }
+.region-facts dd { color: var(--accent); font-size: 13px; }
+
+.region-reset {
+  margin-top: 16px;
+  padding: 8px 12px;
+  color: var(--accent);
+  font-size: 11px;
+  background: rgba(101, 215, 255, 0.08);
+  border: 1px solid rgba(101, 215, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.region-reset:hover { background: rgba(101, 215, 255, 0.16); }
+
+.region-attribution {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #718394; font-size: 9px; line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .geo-column { width: 300px; }
+}
+@media (max-width: 700px) {
+  .geo-column { left: 20px; right: 20px; top: 90px; bottom: 60px; width: auto; }
+}
+
+.globe-error { display: grid; place-items: center; padding: 24px; text-align: center; color: #ff8f8f; font-size: 13px; line-height: 1.8; }
+.globe-error code { color: #65d7ff; }
+
+.globe-issues {
+  position: absolute; z-index: 3; right: 5%; bottom: 70px; max-width: 380px;
+  padding: 10px 14px; pointer-events: none;
+  background: rgba(40, 18, 10, 0.88);
+  border: 1px solid rgba(255, 170, 90, 0.4); border-radius: 10px;
+  color: #ffc58f; font-size: 11px; line-height: 1.6;
+}
+.globe-issues p + p { margin-top: 6px; }

@@ -2,19 +2,51 @@
 import { useState, useCallback } from "react";
 
 import EarthGlobe from "./components/globe/EarthGlobe";
+import BoundaryLayer from "./components/globe/BoundaryLayer";
 import Navbar from "./components/layout/Navbar";
 import LocationPanel from "./components/layout/LocationPanel";
+import RegionSearch from "./components/geography/RegionSearch";
+import RegionSelector from "./components/geography/RegionSelector";
+import RegionPanel from "./components/dashboard/RegionPanel";
+import TemperatureLayer from "./components/globe/TemperatureLayer";
+import TemperatureLegend from "./components/temperature/TemperatureLegend";
+import TemperatureStatistics from "./components/temperature/TemperatureStatistics";
+import TemperatureDashboard from "./components/dashboard/TemperatureDashboard";
+import { useTemperatureData } from "./hooks/useTemperatureData";
+import { useTimeline } from "./hooks/useTimeline";
+import { useRegionTimeline } from "./hooks/useRegionTimeline";
+import { useRegionSelection } from "./hooks/useRegionSelection";
+import { flyHome, flyToBbox } from "./utils/geoUtils";
 
 import "./App.css";
+import "./styles/geography.css";
+import "./styles/temperature.css";
 
 function App() {
   const [location, setLocation] = useState(null);
+  const [viewer, setViewer] = useState(null);
+  const selection = useRegionSelection();
+  const { selectByCoordinates, selectRegion, clear } = selection;
 
-  // Keep the callback stable so Cesium doesn't
-  // unnecessarily recreate the globe.
+  // Temperature: one dataset, one timeline, one selected region — the globe,
+  // chart and statistics all read from these, so they can never disagree.
+  const temperature = useTemperatureData();
+  const years = temperature.data?.years;
+  const timeline = useTimeline({ min: years?.[0] ?? 2001, max: years?.at(-1) ?? 2025 });
+  const regionTimeline = useRegionTimeline(selection.region?.id ?? null, temperature.data);
+
+  // Clicking the globe records the coordinates (existing behaviour) and
+  // resolves which country contains the point.
   const handleLocationSelect = useCallback((coordinates) => {
     setLocation(coordinates);
-  }, []);
+    selectByCoordinates(coordinates.latitude, coordinates.longitude);
+  }, [selectByCoordinates]);
+
+  // Choosing a continent only moves the camera; continents have no boundary.
+  const handleContinentFocus = useCallback((continent) => {
+    if (continent?.focusBbox) flyToBbox(viewer, continent.focusBbox, { ratio: 0.05 });
+    else flyHome(viewer);
+  }, [viewer]);
 
   return (
     <main className="app-shell">
@@ -22,38 +54,58 @@ function App() {
       {/* Interactive 3D Earth */}
       <EarthGlobe
         onLocationSelect={handleLocationSelect}
+        onViewerReady={setViewer}
       />
+
+      {/* Selected region outline + camera movement */}
+      <BoundaryLayer viewer={viewer} boundary={selection.boundary} />
+
+      {/* Year-by-year anomaly heatmap (one imagery layer per year, cross-faded) */}
+      <TemperatureLayer viewer={viewer} data={temperature.data} timeline={timeline} />
 
       {/* Website interface */}
       <div className="interface-overlay">
 
         <Navbar />
 
-        <div className="left-content">
-          <div className="hero-label">
-            <span className="hero-line" />
-            OUR PLANET, YOUR EXPLORATION
-          </div>
+        <div className="left-content geo-column">
+          <RegionSearch onSelect={selectRegion} />
 
-          <h2 className="hero-title">
-            Discover
-            <br />
-            <span>Earth.</span>
-          </h2>
+          <RegionSelector
+            selectedRegion={selection.region}
+            onSelect={selectRegion}
+            onContinentFocus={handleContinentFocus}
+          />
 
-          <p className="hero-description">
-            From the highest mountains to the
-            deepest forests. Explore the natural
-            wonders of our extraordinary planet.
-          </p>
+          <RegionPanel
+            region={selection.region}
+            loading={selection.loading}
+            error={selection.error}
+            notice={selection.notice}
+            onReset={clear}
+          />
+
+          <TemperatureStatistics
+            timelineData={regionTimeline.data}
+            year={timeline.year}
+            status={regionTimeline.status}
+            error={regionTimeline.error}
+          />
 
           <LocationPanel location={location} />
         </div>
 
-        <div className="bottom-content">
-          <span>01 / ONE PLANET</span>
-          <span>EXPLORE WITHOUT LIMITS</span>
-        </div>
+        {temperature.status === "ready" && (
+          <TemperatureLegend
+            baselineLabel={temperature.data.meta.baseline.replace(" mean of each grid cell", "")}
+          />
+        )}
+
+        <TemperatureDashboard
+          temperature={temperature}
+          timeline={timeline}
+          regionTimeline={regionTimeline}
+        />
 
       </div>
     </main>

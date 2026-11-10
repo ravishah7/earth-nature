@@ -11,7 +11,7 @@ function Navbar() {
 
         <div>
           <h1>EARTH<span>EXPLORER</span></h1>
-          <p>DISCOVER THE UNSEEN</p>
+          <p>EARTH CHANGE INTELLIGENCE</p>
         </div>
       </div>
 
