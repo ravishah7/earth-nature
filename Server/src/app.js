@@ -8,12 +8,14 @@ import temperatureRoutes from "./routes/temperature.routes.js";
 import { sendError, sendOk, HttpError } from "./utils/response.js";
 import { getGeoStore } from "./services/geography/geoStore.js";
 import { getTemperatureStore } from "./services/analysis/temperatureStore.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 export function createApp({ clientOrigins } = {}) {
   const app = express();
   app.disable("x-powered-by");
   app.use(compression());
   app.use(cors({ origin: clientOrigins ?? ["http://localhost:5173", "http://127.0.0.1:5173"] }));
+  app.use(express.json({ limit: "20kb" }));
 
   app.get("/api/health", (req, res) => {
     let geography = { ready: false };
@@ -32,6 +34,7 @@ export function createApp({ clientOrigins } = {}) {
   app.use("/api/regions", regionRoutes);
   app.use("/api/regions", boundaryRoutes);
   app.use("/api/temperature", temperatureRoutes);
+  app.use("/api/ai", aiRoutes);
 
   app.use((req, res) => sendError(res, 404, "NOT_FOUND", "Route not found."));
 
