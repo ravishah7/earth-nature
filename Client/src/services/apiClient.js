@@ -37,3 +37,46 @@ export async function apiGet(path, { params, signal } = {}) {
   }
   return { data: body.data, meta: body.meta };
 }
+
+export async function apiPost(path, payload, { signal } = {}) {
+  const url = new URL(`${BASE}${path}`, window.location.origin);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      signal,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    if (err.name === "AbortError") throw err;
+
+    throw new ApiError(
+      "Cannot reach the EarthExplorer server. Is it running?",
+      { code: "NETWORK" }
+    );
+  }
+
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    // Non-JSON error response
+  }
+
+  if (!res.ok || body?.error) {
+    throw new ApiError(
+      body?.error?.message ?? `Request failed (${res.status})`,
+      {
+        status: res.status,
+        code: body?.error?.code,
+      }
+    );
+  }
+
+  return { data: body.data, meta: body.meta };
+}
