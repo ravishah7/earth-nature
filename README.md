@@ -416,3 +416,93 @@ everything that runs in the browser (Cesium rendering, the chart, the timeline).
 
 This is a hackathon project: the visualisations describe how a reanalysis
 product changed over time. They do not, on their own, establish why.
+
+🤖 EarthExplorer AI Copilot
+
+EarthExplorer AI Copilot is an AI-powered assistant that helps users understand regional temperature data through natural-language conversations. It uses Google's Gemini API to generate contextual, evidence-grounded responses based on the available temperature statistics.
+
+✨ Features
+
+- Natural Language Interaction: Ask questions about regional temperature patterns and historical trends.
+- Gemini AI Integration: Uses Google's Gemini API to understand questions and generate informative responses.
+- Evidence-Grounded Responses: Provides answers using actual regional temperature statistics instead of relying solely on general AI knowledge.
+- Contextual Conversation: Supports conversation history for follow-up questions.
+- Scientific Integrity: Avoids unsupported claims about climate causation or statistical significance.
+- Error Handling: Handles invalid regions and AI service failures gracefully.
+- Markdown Rendering: Displays structured AI responses in an easy-to-read format.
+
+🏗️ Architecture
+
+The AI Copilot follows a request-and-response architecture:
+
+1. User Query: The user submits a question through the React chat interface.
+2. Frontend API: The frontend sends the question, selected region, and conversation history to the backend.
+3. Evidence Retrieval: The backend gathers relevant regional temperature statistics.
+4. Prompt Construction: The retrieved evidence and conversation context are provided to Gemini.
+5. AI Generation: Gemini generates a response grounded in the supplied evidence.
+6. Response Display: The backend returns the response, which is rendered in the frontend chat interface.
+
+User
+  |
+  v
+React AI Chat Interface
+  |
+  v
+POST /api/ai/chat
+  |
+  v
+Express AI Controller
+  |
+  v
+Earth Copilot Service
+  |
+  +---- Retrieve Regional Temperature Evidence
+  |
+  +---- Build Context-Aware Prompt
+  |
+  v
+Google Gemini API
+  |
+  v
+AI-Generated Response
+  |
+  v
+React Chat Interface
+
+🛠️ Technology Stack
+
+Layer| Technology
+Frontend| React
+Styling| CSS
+Markdown Rendering| React Markdown
+Backend| Node.js, Express.js
+AI Model Integration| Google Gemini API
+API Communication| REST API
+
+⚙️ Environment Configuration
+
+Add your Gemini API key to the backend environment file:
+
+"Server/.env"
+
+GEMINI_API_KEY=your_gemini_api_key
+
+Never expose your API key in frontend code or commit your ".env" file to GitHub.
+
+🔌 API Endpoint
+
+POST "/api/ai/chat"
+
+Example request:
+
+{
+  "regionId": "IND",
+  "message": "What was the temperature trend in India?",
+  "history": []
+}
+
+The endpoint returns an AI-generated answer along with relevant metadata and error information when applicable.
+
+🔬 Scientific Reliability
+
+The Copilot is designed to distinguish observed temperature patterns from scientific conclusions. It uses available regional data as evidence and avoids presenting descriptive trends as proof of causation or statistical significance.
