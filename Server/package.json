@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=20.12" },
+  "engines": {
+    "node": ">=20.12"
+  },
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
@@ -12,6 +14,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@google/genai": "^3.2.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^5.0.1"

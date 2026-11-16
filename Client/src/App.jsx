@@ -17,6 +17,8 @@ import { useTimeline } from "./hooks/useTimeline";
 import { useRegionTimeline } from "./hooks/useRegionTimeline";
 import { useRegionSelection } from "./hooks/useRegionSelection";
 import { flyHome, flyToBbox } from "./utils/geoUtils";
+import EarthCopilot from "./components/ai/EarthCopilot";
+import "./styles/copilot.css";
 
 import "./App.css";
 import "./styles/geography.css";
@@ -105,6 +107,11 @@ function App() {
           temperature={temperature}
           timeline={timeline}
           regionTimeline={regionTimeline}
+        />
+
+        <EarthCopilot
+          regionId={selection.region?.id ?? null}
+          regionName={selection.region?.name ?? ""}
         />
 
       </div>

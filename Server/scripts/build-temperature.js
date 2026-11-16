@@ -69,12 +69,69 @@ const tileFile = (t, a) =>
 
 async function loadOrFetchTile(tile, args, log) {
   const file = tileFile(tile, args);
+
+  // Reuse previously downloaded tiles.
   try {
     return { points: JSON.parse(await fs.readFile(file, "utf8")), cached: true };
-  } catch { /* not cached */ }
-  const points = await fetchRegionalAnnual(tile, { startYear: args.startYear, endYear: args.endYear, log });
+  } catch {
+    // Tile is not cached; fetch it.
+  }
+
+  // NASA POWER regional API requires at least a 2° latitude range.
+  // Expand only the request boundaries, not the actual tile boundaries.
+  let requestSouth = tile.south;
+  let requestNorth = tile.north;
+
+  const latitudeRange = requestNorth - requestSouth;
+
+  if (latitudeRange < 2) {
+    const missingRange = 2 - latitudeRange;
+
+    // Prefer expanding north; expand south if we reach the 90° limit.
+    const expandNorth = Math.min(missingRange, 90 - requestNorth);
+    requestNorth += expandNorth;
+    requestSouth -= missingRange - expandNorth;
+  }
+
+  const requestTile = {
+    ...tile,
+    south: requestSouth,
+    north: requestNorth,
+  };
+
+  const downloadedPoints = await fetchRegionalAnnual(requestTile, {
+    startYear: args.startYear,
+    endYear: args.endYear,
+    log,
+  });
+
+  // Keep only points belonging to the original tile.
+  // This prevents expanded requests from introducing duplicate or
+  // out-of-bounds grid points.
+  const epsilon = 1e-6;
+  const points = downloadedPoints.filter(
+    (p) =>
+      p.lat >= tile.south - epsilon &&
+      p.lat <= tile.north + epsilon &&
+      p.lon >= tile.west - epsilon &&
+      p.lon <= tile.east + epsilon
+  );
+
   await fs.mkdir(RAW_DIR, { recursive: true });
-  await fs.writeFile(file, JSON.stringify(points.map((p) => ({ lat: p.lat, lon: p.lon, values: p.values.map((v) => (Number.isFinite(v) ? v : null)) }))));
+
+  await fs.writeFile(
+    file,
+    JSON.stringify(
+      points.map((p) => ({
+        lat: p.lat,
+        lon: p.lon,
+        values: p.values.map((v) =>
+          Number.isFinite(v) ? v : null
+        ),
+      }))
+    )
+  );
+
   return { points, cached: false };
 }
 
